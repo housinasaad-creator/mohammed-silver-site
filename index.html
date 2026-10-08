@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ar" data-lang="ar">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>محمد · ساعات وفضيات بأحجار كريمة</title>
+<meta name="description" content="MOHAMMED: Watches & silver with gemstones. Rings, name plates, chains, torcs and prayer beads. Concept demo store, prices in Turkish lira, orders via WhatsApp.">
+<meta name="theme-color" content="#070a11">
+<meta property="og:type" content="website">
+<meta property="og:title" content="MOHAMMED · Watches & Silver with Gemstones">
+<meta property="og:description" content="A 3D scroll-story jewelry & watch store. AR · EN · TR, prices in lira, cart to WhatsApp.">
+<meta property="og:image" content="https://housinasaad-creator.github.io/mohammed-silver-site/assets/og.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/favicon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=Reem+Kufi:wght@500;700&family=Amiri:wght@400;700&family=Markazi+Text:wght@500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="loader" role="status" aria-live="polite">
+  <div class="ld-in"><img src="assets/logo-silver.png" alt="" width="132" height="80"><div class="ld-bar"><i></i></div><p data-i="loader">يُجهَّز المعرض</p></div>
+</div>
+<div class="pbar" aria-hidden="true"><i id="pfill"></i></div>
+<div class="cursor" id="cursor" aria-hidden="true"><i></i></div>
+
+<header class="hdr" id="hdr">
+  <a class="brand" href="#top" aria-label="MOHAMMED">
+    <img src="assets/logo-silver.png" alt="" width="56" height="34">
+    <span><b>MOHAMMED</b><small data-i="brandSub">ساعات · فضة · أحجار كريمة</small></span>
+  </a>
+  <nav class="nav" aria-label="main">
+    <a href="#collection" data-i="nav_collection">المجموعة</a>
+    <a href="#atelier" data-i="nav_atelier">الأتيليه</a>
+    <a href="#craft" data-i="nav_story">الحرفة</a>
+    <a href="#order" data-i="nav_order">الطلب</a>
+  </nav>
+  <div class="tools">
+    <div class="langs" id="langs" role="group" aria-label="language"><i class="thumb"></i>
+      <button type="button" data-l="ar">AR</button><button type="button" data-l="en">EN</button><button type="button" data-l="tr">TR</button>
+    </div>
+    <button class="ibtn" id="snd" type="button" aria-pressed="false" aria-label="sound">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="7.5"/><path d="M12 13V8.5M12 13l3 1.8M9.5 3h5"/><path class="mute" d="M3 21 21 3"/></svg>
+    </button>
+    <button class="ibtn bagbtn" id="bagBtn" type="button" aria-label="bag">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>
+      <em id="bagCount">0</em>
+    </button>
+  </div>
+</header>
+
+<main id="top">
+  <!-- ===== هيرو: قصة على السكرول ===== -->
+  <section class="story" id="story" aria-label="MOHAMMED">
+    <div class="stage" id="stage">
+      <div class="poster" id="poster"><span class="stars"></span><img src="assets/logo-silver.png" alt="" width="180" height="110"></div>
+      <div class="vig"></div>
+      <div class="chaps">
+        <article class="chap on" data-c="0"><p class="kick" data-i="c0_k"></p><h1 class="ttl" data-i="c0_t"></h1><p class="lead" data-i="c0_p"></p></article>
+        <article class="chap" data-c="1"><p class="kick" data-i="c1_k"></p><h2 class="ttl" data-i="c1_t"></h2><p class="lead" data-i="c1_p"></p></article>
+        <article class="chap" data-c="2"><p class="kick" data-i="c2_k"></p><h2 class="ttl" data-i="c2_t"></h2><p class="lead" data-i="c2_p"></p></article>
+        <article class="chap" data-c="3"><p class="kick" data-i="c3_k"></p><h2 class="ttl" data-i="c3_t"></h2><p class="lead" data-i="c3_p"></p></article>
+        <article class="chap" data-c="4"><p class="kick" data-i="c4_k"></p><h2 class="ttl" data-i="c4_t"></h2><p class="lead" data-i="c4_p"></p><a class="btn pri mag" href="#collection" data-i="c4_cta"></a></article>
+      </div>
+      <div class="callouts" id="callouts" aria-hidden="true">
+        <span class="co" data-k="crystal"><b data-i="a_crystal"></b></span><span class="co" data-k="dial"><b data-i="a_dial"></b></span><span class="co" data-k="movement"><b data-i="a_movement"></b></span><span class="co" data-k="case"><b data-i="a_case"></b></span>
+      </div>
+      <ol class="rail" id="rail" aria-label="chapters"><li><button type="button" data-c="0" aria-label="1"></button></li><li><button type="button" data-c="1" aria-label="2"></button></li><li><button type="button" data-c="2" aria-label="3"></button></li><li><button type="button" data-c="3" aria-label="4"></button></li><li><button type="button" data-c="4" aria-label="5"></button></li></ol>
+      <div class="cue" id="cue"><span></span><em data-i="scroll">مرّر للأسفل</em></div>
+      <p class="note3d" id="note3d" hidden data-i="err3d"></p>
+    </div>
+  </section>
+
+  <section class="trust" aria-label="why">
+    <ul>
+      <li class="rv"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3 27 9v9c0 5-4.5 8.6-11 11C9.5 26.600 5 23 5 18V9l11-6Z"/><path d="m11 16 3.500 3.500L21.500 12"/></svg><div><b data-i="trust1_t"></b><span data-i="trust1_p"></span></div></li>
+      <li class="rv"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 26 22 9l3 3L8 29H5v-3Z"/><path d="m19 12 3 3M24 4l1.500 3L29 8.500 25.500 10 24 13l-1.500-3L19 8.500 22.500 7 24 4Z"/></svg><div><b data-i="trust2_t"></b><span data-i="trust2_p"></span></div></li>
+      <li class="rv"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="12" width="24" height="16" rx="2"/><path d="M4 17h24M16 12v16M16 12c-4 0-7-1.500-7-4s3-3 5-1.500S16 12 16 12Zm0 0c4 0 7-1.500 7-4s-3-3-5-1.500S16 12 16 12Z"/></svg><div><b data-i="trust3_t"></b><span data-i="trust3_p"></span></div></li>
+      <li class="rv"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 28l2-7a11.500 11.500 0 1 1 4.500 4.300L4 28Z"/><path d="M12 11c-1 2 0 5 3 8s6 4 8 3l1-2-3-1.500-1.500 1c-1.500-.5-3.500-2.500-4-4l1-1.500L15 10l-3 1Z"/></svg><div><b data-i="trust4_t"></b><span data-i="trust4_p"></span></div></li>
+    </ul>
+  </section>
+
+  <!-- ===== المجموعة (صور تو دي) ===== -->
+  <section class="sec collection" id="collection">
+    <header class="sh rv"><p class="kick" data-i="col_k"></p><h2 class="ttl" data-i="col_t"></h2><p class="lead" data-i="col_p"></p></header>
+    <div class="toolbar rv">
+      <div class="chips" id="filters" role="tablist"></div>
+      <label class="sort"><span data-i="sort"></span><select id="sort"><option value="f" data-i="s_featured"></option><option value="l" data-i="s_low"></option><option value="h" data-i="s_high"></option></select></label>
+      <p class="count" id="count"></p>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <!-- ===== الأتيليه: تجربة ثلاثية الأبعاد بالسحب ===== -->
+  <section class="sec atelier" id="atelier">
+    <div class="at-wrap">
+      <div class="at-view" id="atView">
+        <canvas id="atCanvas" aria-label="3D"></canvas>
+        <div class="at-hint"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/></svg><span data-i="at_drag"></span></div>
+        <div class="at-name" id="atName"></div>
+      </div>
+      <div class="at-panel rv">
+        <p class="kick" data-i="at_k"></p><h2 class="ttl" data-i="at_t"></h2><p class="lead" data-i="at_p"></p>
+        <div class="tabs" id="atTabs" role="tablist"><button type="button" data-t="ring" class="on" data-i="at_ring"></button><button type="button" data-t="watch" data-i="at_watch"></button><button type="button" data-t="beads" data-i="at_beads"></button></div>
+        <p class="pick-l" id="atPickL"></p>
+        <div class="swatches" id="atSw"></div>
+        <button type="button" class="btn ghost" id="atSee" data-i="at_see"></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== الحرفة ===== -->
+  <section class="sec craft" id="craft">
+    <header class="sh rv"><p class="kick" data-i="st_k"></p><h2 class="ttl" data-i="st_t"></h2><p class="lead" data-i="st_p"></p></header>
+    <div class="pillars">
+      <article class="pil rv"><span class="pn">01</span><i class="gm g1"></i><h3 data-i="p1_t"></h3><p data-i="p1_p"></p></article>
+      <article class="pil rv"><span class="pn">02</span><i class="gm g2"></i><h3 data-i="p2_t"></h3><p data-i="p2_p"></p></article>
+      <article class="pil rv"><span class="pn">03</span><i class="gm g3"></i><h3 data-i="p3_t"></h3><p data-i="p3_p"></p></article>
+      <article class="pil rv"><span class="pn">04</span><i class="gm g4"></i><h3 data-i="p4_t"></h3><p data-i="p4_p"></p></article>
+    </div>
+  </section>
+
+  <!-- ===== الطلب ===== -->
+  <section class="sec order" id="order">
+    <header class="sh rv"><p class="kick" data-i="or_k"></p><h2 class="ttl" data-i="or_t"></h2></header>
+    <ol class="steps">
+      <li class="rv"><b>1</b><h3 data-i="or_1"></h3><p data-i="or_1p"></p></li>
+      <li class="rv"><b>2</b><h3 data-i="or_2"></h3><p data-i="or_2p"></p></li>
+      <li class="rv"><b>3</b><h3 data-i="or_3"></h3><p data-i="or_3p"></p></li>
+    </ol>
+    <div class="cta rv"><h2 class="ttl" data-i="cta_t"></h2><p class="lead" data-i="cta_p"></p><a class="btn pri mag" id="waLink" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.600 15.100L2 22l5-1.300A10 10 0 1 0 12 2Zm5.200 14c-.2.600-1.300 1.200-1.800 1.200-.5.100-1 .2-3.200-.7-2.700-1.100-4.400-3.800-4.500-4-.1-.2-1.100-1.400-1.100-2.700 0-1.300.7-1.900.9-2.200.2-.3.500-.3.700-.3h.5c.2 0 .4 0 .6.500l.8 1.900c.1.200.1.400 0 .6l-.4.600c-.1.200-.3.300-.1.600.2.300.8 1.300 1.700 2.100 1.200 1 2.100 1.300 2.400 1.500.3.100.5.100.6-.1l.8-1c.2-.3.400-.2.700-.1l1.800.9c.3.100.5.200.5.300.1.200.1.800-.1 1.400Z"/></svg><span data-i="cta_btn"></span></a></div>
+  </section>
+</main>
+
+<footer class="foot">
+  <img src="assets/logo-silver.png" alt="MOHAMMED" width="84" height="51">
+  <p data-i="foot_demo"></p>
+  <p class="by" data-i="foot_by"></p>
+  <a href="#top" class="totop" data-i="foot_top"></a>
+</footer>
+
+<!-- حقيبة الطلب -->
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true" aria-label="bag">
+  <header><h2 data-i="bag_t"></h2><button type="button" class="x" id="bagClose" aria-label="close">×</button></header>
+  <div class="d-list" id="bagList"></div>
+  <footer class="d-foot" id="bagFoot">
+    <div class="tot"><span data-i="bag_sub"></span><b id="bagTotal">0</b></div>
+    <button type="button" class="btn pri wide" id="bagSend"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.600 15.100L2 22l5-1.300A10 10 0 1 0 12 2Zm5.200 14c-.2.600-1.300 1.200-1.800 1.200-.5.100-1 .2-3.200-.7-2.700-1.100-4.400-3.800-4.500-4-.1-.2-1.100-1.400-1.100-2.700 0-1.300.7-1.900.9-2.200.2-.3.500-.3.700-.3h.5c.2 0 .4 0 .6.500l.8 1.900c.1.200.1.400 0 .6l-.4.600c-.1.200-.3.300-.1.600.2.300.8 1.300 1.700 2.100 1.200 1 2.100 1.300 2.400 1.500.3.100.5.100.6-.1l.8-1c.2-.3.400-.2.700-.1l1.800.9c.3.100.5.200.5.300.1.200.1.800-.1 1.400Z"/></svg><span data-i="bag_send"></span></button>
+    <p class="fine" data-i="bag_note"></p>
+    <button type="button" class="link" id="bagClear" data-i="bag_clear"></button>
+  </footer>
+</aside>
+
+<!-- معاينة منتج -->
+<div class="modal" id="modal" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="m-back" id="mBack"></div>
+  <div class="m-card" id="mCard">
+    <button type="button" class="x" id="mClose" aria-label="close">×</button>
+    <div class="m-gal"><div class="m-img" id="mImg"><img id="mA" alt=""><img id="mB" alt=""></div><div class="m-th" id="mTh"></div></div>
+    <div class="m-info" id="mInfo"></div>
+  </div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
