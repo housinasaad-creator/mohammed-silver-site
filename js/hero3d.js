@@ -37,11 +37,11 @@ export function createHero(canvas, opts = {}) {
   for (let i = 0; i < 5; i++) { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: starTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0 })); sp.userData = { ph: Math.random() * 6, sp: .6 + Math.random() * .8, r: .2 + Math.random() * .5, a: Math.random() * 6 }; ringG.add(sp); glints.push(sp); }
 
   /* أحجار طافية: قليلة وكبيرة وبطيئة، وخلف القطع دائماً (عمق سالب) فلا تظهر فوق الساعة أو الخاتم. كل حجر مجسّمان (قشرة شفافة + داخل عاكس) */
-  const gemKinds = ['sapphire', 'amethyst', 'emerald', 'ruby', 'topaz', 'pink', 'citrine', 'clear'].slice(0, coarse ? 5 : 8), floaters = [], perKind = 1;
+  const gemKinds = ['sapphire', 'amethyst', 'emerald', 'ruby', 'topaz', 'pink', 'citrine', 'clear'].slice(0, coarse ? 4 : 6), floaters = [], perKind = 1;
   gemKinds.forEach((k) => {
     const geo = gemGeo('round', 1), outer = new THREE.InstancedMesh(geo, gemMat(k), perKind), inner = new THREE.InstancedMesh(geo, gemInnerMat(k), perKind);
     [outer, inner].forEach((m) => { m.frustumCulled = false; scene.add(m); });
-    const arr = []; for (let i = 0; i < perKind; i++) arr.push({ r: 4 + Math.random() * 3.4, a: Math.random() * Math.PI * 2, sp: (Math.random() * .6 + .4) * (Math.random() < .5 ? -1 : 1), y: (Math.random() - .5) * 4.8, z: -8 + Math.random() * 4.4, s: .55 + Math.random() * .45, ph: Math.random() * 6, rot: Math.random() * 3 });
+    const arr = []; for (let i = 0; i < perKind; i++) arr.push({ r: 4.6 + Math.random() * 4, a: Math.random() * Math.PI * 2, sp: (Math.random() * .6 + .4) * (Math.random() < .5 ? -1 : 1), y: (Math.random() - .5) * 4.8, z: -8 + Math.random() * 4.4, s: .55 + Math.random() * .45, ph: Math.random() * 6, rot: Math.random() * 3 });
     floaters.push({ outer, inner, arr });
   });
 
@@ -106,7 +106,7 @@ export function createHero(canvas, opts = {}) {
 
     /* الأحجار الطافية: بطيئة وخلف القطع */
     const fv = .6 + .4 * Math.sin(p * Math.PI);
-    floaters.forEach(({ outer, inner, arr }, ki) => { arr.forEach((g, i) => { const a = g.a + t * g.sp * .06 + p * 1.1 * (ki % 2 ? 1 : -1); tmp.set(Math.cos(a) * g.r * (mob ? .5 : 1), g.y + Math.sin(t * .22 + g.ph) * .18 - p * .5, g.z); eul.set(g.rot + t * .1, t * .08 + g.rot, 0); q.setFromEuler(eul); const sc = g.s * fv * (mob ? .75 : 1); s3.set(sc, sc, sc); m4.compose(tmp, q, s3); outer.setMatrixAt(i, m4); s3.setScalar(sc * .985); m4.compose(tmp, q, s3); inner.setMatrixAt(i, m4); }); outer.instanceMatrix.needsUpdate = true; inner.instanceMatrix.needsUpdate = true; });
+    floaters.forEach(({ outer, inner, arr }, ki) => { arr.forEach((g, i) => { const a = g.a + t * g.sp * .06 + p * 1.1 * (ki % 2 ? 1 : -1); tmp.set(mob ? Math.cos(a) * g.r * .5 : 1 + (Math.cos(a) * .5 + .5) * g.r * 1.05, g.y + Math.sin(t * .22 + g.ph) * .18 - p * .5, g.z); eul.set(g.rot + t * .1, t * .08 + g.rot, 0); q.setFromEuler(eul); const sc = g.s * fv * (mob ? .75 : 1); s3.set(sc, sc, sc); m4.compose(tmp, q, s3); outer.setMatrixAt(i, m4); s3.setScalar(sc * .985); m4.compose(tmp, q, s3); inner.setMatrixAt(i, m4); }); outer.instanceMatrix.needsUpdate = true; inner.instanceMatrix.needsUpdate = true; });
 
     /* مسبحة تنساب في الفصل 3 */
     const bv = ss(seg(p, .62, .72)) * (1 - ss(seg(p, .84, .9))), flow = p * 2.2 + t * .05;
