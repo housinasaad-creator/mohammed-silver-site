@@ -6,20 +6,21 @@
 */
 import { THREE, baseStage, clamp, lerp, seg, ss, canvasTex } from './lib3d.js';
 import { buildWatch } from './watch.js';
-import { buildRing, buildPendant, chainAlong, mats, gemMat, gemGeo, GEMS } from './jewelry.js';
+import { buildRing, buildPendant, chainAlong, mats, gemMat, gemInnerMat, gemGeo, GEMS } from './jewelry.js';
 
 export const CHAPTERS = [0, .2, .42, .64, .86];
 const pulse = (p, a0, a1, b0, b1) => ss(seg(p, a0, a1)) * (1 - ss(seg(p, b0, b1)));
 
 export function createHero(canvas, opts = {}) {
-  const S = baseStage(canvas, { fov: 28, exposure: 1.06, dprCap: 1.5, forceRun: false });
+  const col = new THREE.Color();
+  const S = baseStage(canvas, { fov: 28, exposure: 1.06, dprCap: 1.35, forceRun: false });
   if (!S) return null;
   const { scene, camera, coarse } = S, M = mats();
   const api = { p: 0, target: 0, px: 0, py: 0, tx: 0, ty: 0, onTick: null, onChapter: null, anchors: [], chapter: 0 };
 
-  scene.add(new THREE.HemisphereLight(0xdbe6ff, 0x161a24, .5));
+  scene.add(new THREE.HemisphereLight(0xf2f0ec, 0x1a1816, .5));
   const key = new THREE.DirectionalLight(0xffffff, 1.1); key.position.set(-4, 6, 6); scene.add(key);
-  const rim = new THREE.DirectionalLight(0x8fb4ff, .9); rim.position.set(5, 2, -6); scene.add(rim);
+  const rim = new THREE.DirectionalLight(0xfff4e6, .8); rim.position.set(5, 2, -6); scene.add(rim);
   const glow = new THREE.PointLight(0xffffff, 7, 16, 1.6); glow.position.set(0, 2, 5); scene.add(glow);
 
   /* الساعة */
@@ -35,17 +36,22 @@ export function createHero(canvas, opts = {}) {
   });
   for (let i = 0; i < 5; i++) { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: starTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0 })); sp.userData = { ph: Math.random() * 6, sp: .6 + Math.random() * .8, r: .2 + Math.random() * .5, a: Math.random() * 6 }; ringG.add(sp); glints.push(sp); }
 
-  /* أحجار طافية بألوان متعددة */
-  const gemKinds = ['sapphire', 'amethyst', 'emerald', 'ruby', 'topaz', 'citrine', 'pink'], floaters = [], perKind = coarse ? 4 : 7, gg = gemGeo('round', 1);
+  /* أحجار طافية: قليلة وكبيرة وبطيئة، وخلف القطع دائماً (عمق سالب) فلا تظهر فوق الساعة أو الخاتم. كل حجر مجسّمان (قشرة شفافة + داخل عاكس) */
+  const gemKinds = ['sapphire', 'amethyst', 'emerald', 'ruby', 'topaz', 'pink', 'citrine', 'clear'].slice(0, coarse ? 5 : 8), floaters = [], perKind = 1;
   gemKinds.forEach((k) => {
-    const im = new THREE.InstancedMesh(gg, gemMat(k), perKind); im.frustumCulled = false; scene.add(im);
-    const arr = []; for (let i = 0; i < perKind; i++) arr.push({ r: 2.8 + Math.random() * 4.2, a: Math.random() * Math.PI * 2, sp: (Math.random() * .5 + .15) * (Math.random() < .5 ? -1 : 1), y: (Math.random() - .5) * 5.2, z: -3.5 + Math.random() * 5, s: .1 + Math.random() * .22, ph: Math.random() * 6, rot: Math.random() * 3 });
-    floaters.push({ im, arr });
+    const geo = gemGeo('round', 1), outer = new THREE.InstancedMesh(geo, gemMat(k), perKind), inner = new THREE.InstancedMesh(geo, gemInnerMat(k), perKind);
+    [outer, inner].forEach((m) => { m.frustumCulled = false; scene.add(m); });
+    const arr = []; for (let i = 0; i < perKind; i++) arr.push({ r: 4 + Math.random() * 3.4, a: Math.random() * Math.PI * 2, sp: (Math.random() * .6 + .4) * (Math.random() < .5 ? -1 : 1), y: (Math.random() - .5) * 4.8, z: -8 + Math.random() * 4.4, s: .55 + Math.random() * .45, ph: Math.random() * 6, rot: Math.random() * 3 });
+    floaters.push({ outer, inner, arr });
   });
 
-  /* حبّات المسبحة تنساب على مسار ثلاثي الأبعاد */
-  const NB = coarse ? 36 : 56, beadMat = new THREE.MeshPhysicalMaterial({ color: 0xd8851a, roughness: .12, clearcoat: 1, clearcoatRoughness: .05, envMapIntensity: 2, emissive: 0x6a2a00, emissiveIntensity: .35 });
-  const beads = new THREE.InstancedMesh(new THREE.SphereGeometry(.2, 24, 16), beadMat, NB); beads.frustumCulled = false; scene.add(beads);
+  /* حبّات المسبحة (كهرمان): قشرة نصف شفافة + قلب متوهج، مع تفاوت بسيط في اللون بين الحبّات */
+  const NB = coarse ? 34 : 52;
+  const bOuter = new THREE.MeshPhysicalMaterial({ color: 0xffb347, transparent: true, opacity: .3, depthWrite: false, roughness: .03, clearcoat: 1, clearcoatRoughness: .03, envMapIntensity: 3.2, ior: 1.55 });
+  const bInner = new THREE.MeshStandardMaterial({ color: 0xb85a00, emissive: 0xa33f00, emissiveIntensity: .85, roughness: .22, envMapIntensity: 1.6 });
+  const beads = new THREE.InstancedMesh(new THREE.SphereGeometry(.2, 28, 20), bOuter, NB), beadsIn = new THREE.InstancedMesh(new THREE.SphereGeometry(.172, 20, 14), bInner, NB);
+  for (let i = 0; i < NB; i++) { col.setScalar(.88 + Math.random() * .14); beads.setColorAt(i, col); col.setRGB(1, .78 + Math.random() * .22, .55 + Math.random() * .3); beadsIn.setColorAt(i, col); }
+  [beads, beadsIn].forEach((m) => { m.frustumCulled = false; scene.add(m); });
   const spacers = new THREE.InstancedMesh(new THREE.CylinderGeometry(.21, .21, .1, 20), M.silver, 5); spacers.frustumCulled = false; scene.add(spacers);
 
   /* بلاكة معلّقة بسلسلة */
@@ -62,7 +68,7 @@ export function createHero(canvas, opts = {}) {
   };
   S.resize();
 
-  const tmp = new THREE.Vector3(), m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), s3 = new THREE.Vector3(), eul = new THREE.Euler(), col = new THREE.Color();
+  const tmp = new THREE.Vector3(), m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), s3 = new THREE.Vector3(), eul = new THREE.Euler();
   const t0 = performance.now(); let lastChap = -1;
   const place = (g, x, y, z, s, vis) => { g.position.set(x, y, z); g.scale.setScalar(Math.max(.0001, s)); g.visible = s > .002 && vis !== false; };
 
@@ -98,19 +104,19 @@ export function createHero(canvas, opts = {}) {
     ringG.rotation.set(.62, t * .5 + p * 10, 0);
     glints.forEach((g) => { const u = g.userData, o = (Math.sin(t * u.sp + u.ph) * .5 + .5); g.material.opacity = (ringS > .1 ? 1 : 0) * Math.pow(o, 3); const a = u.a + t * .2; g.position.set(Math.cos(a) * u.r * 1.1, 1.0 + Math.sin(a * 1.3) * .35, Math.sin(a) * u.r * 1.1 + .3); g.scale.setScalar(.35 + o * .5); });
 
-    /* الأحجار الطافية */
-    const fv = .55 + .45 * Math.sin(p * Math.PI);
-    floaters.forEach(({ im, arr }, ki) => { arr.forEach((g, i) => { const a = g.a + t * g.sp * .3 + p * 3 * (ki % 2 ? 1 : -1); tmp.set(Math.cos(a) * g.r * (mob ? .6 : 1), g.y + Math.sin(t * .6 + g.ph) * .25 - p * 1.2, Math.sin(a) * g.r * .45 + g.z); eul.set(g.rot + t * .4, t * .3 + g.rot, 0); q.setFromEuler(eul); const s = g.s * fv * (mob ? .8 : 1); s3.set(s, s, s); m4.compose(tmp, q, s3); im.setMatrixAt(i, m4); }); im.instanceMatrix.needsUpdate = true; });
+    /* الأحجار الطافية: بطيئة وخلف القطع */
+    const fv = .6 + .4 * Math.sin(p * Math.PI);
+    floaters.forEach(({ outer, inner, arr }, ki) => { arr.forEach((g, i) => { const a = g.a + t * g.sp * .06 + p * 1.1 * (ki % 2 ? 1 : -1); tmp.set(Math.cos(a) * g.r * (mob ? .5 : 1), g.y + Math.sin(t * .22 + g.ph) * .18 - p * .5, g.z); eul.set(g.rot + t * .1, t * .08 + g.rot, 0); q.setFromEuler(eul); const sc = g.s * fv * (mob ? .75 : 1); s3.set(sc, sc, sc); m4.compose(tmp, q, s3); outer.setMatrixAt(i, m4); s3.setScalar(sc * .985); m4.compose(tmp, q, s3); inner.setMatrixAt(i, m4); }); outer.instanceMatrix.needsUpdate = true; inner.instanceMatrix.needsUpdate = true; });
 
     /* مسبحة تنساب في الفصل 3 */
     const bv = ss(seg(p, .62, .72)) * (1 - ss(seg(p, .84, .9))), flow = p * 2.2 + t * .05;
-    beads.visible = bv > .01; spacers.visible = beads.visible;
+    beads.visible = bv > .01; beadsIn.visible = beads.visible; spacers.visible = beads.visible;
     if (beads.visible) {
       for (let i = 0; i < NB; i++) {
         const u = (((i / NB + flow) % 1) + 1) % 1, a = u * Math.PI * 2, x = lerp(-9.5, 9.5, u) * (mob ? .5 : 1), y = Math.sin(a + .6) * 1.9 + 1.4 + (mob ? .9 : 0), z = Math.cos(a) * 2.2 - .5, edge = ss(seg(u, 0, .06)) * (1 - ss(seg(u, .94, 1))), s = (.8 + Math.sin(a * 2) * .18) * edge * bv * 1.05;
-        tmp.set(x, y, z); q.identity(); s3.set(s, s, s); m4.compose(tmp, q, s3); beads.setMatrixAt(i, m4);
+        tmp.set(x, y, z); q.identity(); s3.set(s, s, s); m4.compose(tmp, q, s3); beads.setMatrixAt(i, m4); beadsIn.setMatrixAt(i, m4);
       }
-      beads.instanceMatrix.needsUpdate = true;
+      beads.instanceMatrix.needsUpdate = true; beadsIn.instanceMatrix.needsUpdate = true;
       for (let k = 0; k < 5; k++) { const u = (((k / 5 + flow + .05) % 1) + 1) % 1, a = u * Math.PI * 2, x = lerp(-9.5, 9.5, u) * (mob ? .5 : 1), y = Math.sin(a + .6) * 1.9 + 1.4 + (mob ? .9 : 0), z = Math.cos(a) * 2.2 - .5, edge = ss(seg(u, 0, .06)) * (1 - ss(seg(u, .94, 1))); tmp.set(x, y, z); eul.set(0, 0, Math.PI / 2 + Math.cos(a) * .6); q.setFromEuler(eul); s3.set(edge * bv, edge * bv, edge * bv); m4.compose(tmp, q, s3); spacers.setMatrixAt(k, m4); }
       spacers.instanceMatrix.needsUpdate = true;
     }

@@ -4,7 +4,7 @@
   المحور: وجه الساعة نحو +Y عند البناء، وتُدار مجموعة الخارج ليواجه +Z مع الـ12 للأعلى.
 */
 import { THREE, rrShape, canvasTex, clamp, lerp } from './lib3d.js';
-import { mats, gem, gemMat } from './jewelry.js';
+import { mats, gem, gemMat, finishMat } from './jewelry.js';
 
 const DIALS = {
   black: { bg: ['#1b2230', '#07090d'], tick: '#e8edf5', txt: '#e8edf5', lume: '#cfe6ff' },
@@ -13,7 +13,7 @@ const DIALS = {
   green: { bg: ['#2c6a55', '#0c2a21'], tick: '#eaf4ef', txt: '#eaf4ef', lume: '#d9f2e6' },
   champagne: { bg: ['#efe3c9', '#b9a57d'], tick: '#2a2418', txt: '#2a2418', lume: '#2a2418' }
 };
-const STRAPS = { 'leather-black': 0x17140f, 'leather-brown': 0x5b3416, 'leather-navy': 0x14223f, 'leather-green': 0x1b3a2d };
+const STRAPS = { 'leather-black': 0x17140f, 'leather-brown': 0x5b3416, 'leather-navy': 0x14223f, 'leather-green': 0x1b3a2d, 'leather-tan': 0x9a6a3a, 'leather-burgundy': 0x4a1420, 'leather-grey': 0x3a3d44 };
 
 function dialDraw(d, text) {
   return (c, w, h) => {
@@ -37,7 +37,7 @@ function gearGeo(R, teeth, th, holes = 0) {
 export function buildWatch(o = {}) {
   const M = mats(), root = new THREE.Group(), g = new THREE.Group(); root.add(g); root.rotation.x = Math.PI / 2;
   const dial = DIALS[o.dial] || DIALS.black, parts = {}, mk = (name, y = 0) => { const p = new THREE.Group(); p.name = name; p.userData.y0 = y; p.position.y = y; g.add(p); parts[name] = p; return p; };
-  const metal = o.strap === 'silver' ? M.silver : M.silver;
+  const metal = finishMat(o.finish || 'polish');
 
   /* العلبة (كوب مجوّف) + الآذان + التاج */
   const cs = mk('case'), cp = [[0, -.2], [.84, -.2], [.9, -.18], [.97, -.12], [1, -.04], [1, .08], [.96, .14], [.9, .16], [.8, .16], [.8, -.12], [0, -.12]].map((p) => new THREE.Vector2(p[0], p[1]));
@@ -69,7 +69,9 @@ export function buildWatch(o = {}) {
   const cry = mk('crystal', .16); const dome = new THREE.LatheGeometry([[0, .13], [.4, .125], [.64, .1], [.78, .05], [.8, 0], [.8, -.0]].map((p) => new THREE.Vector2(p[0], p[1])), 80);
   cry.add(new THREE.Mesh(dome, new THREE.MeshPhysicalMaterial({ color: 0xffffff, transparent: true, opacity: .16, roughness: 0, metalness: 0, clearcoat: 1, clearcoatRoughness: 0, envMapIntensity: 2.4, depthWrite: false, side: THREE.DoubleSide, ior: 1.5 })));
   const bz = mk('bezel', .14); bz.add(new THREE.Mesh(new THREE.LatheGeometry([[.79, .0], [.97, .0], [1, .03], [.99, .08], [.94, .105], [.84, .1], [.79, .06], [.79, 0]].map((p) => new THREE.Vector2(p[0], p[1])), 120), metal));
-  for (let i = 0; i < 60; i++) { const a = (i / 60) * Math.PI * 2, t = new THREE.Mesh(new THREE.BoxGeometry(.012, .008, .05), M.dark); t.position.set(Math.sin(a) * .9, .108, -Math.cos(a) * .9); t.rotation.y = a; bz.add(t); }
+  const bg = o.bezelGems && o.bezelGems !== 'none' ? o.bezelGems : null;
+  if (!bg) for (let i = 0; i < 60; i++) { const a = (i / 60) * Math.PI * 2, t = new THREE.Mesh(new THREE.BoxGeometry(.012, .008, .05), M.dark); t.position.set(Math.sin(a) * .9, .108, -Math.cos(a) * .9); t.rotation.y = a; bz.add(t); }
+  else for (let i = 0; i < 40; i++) { const a = (i / 40) * Math.PI * 2, gs = gem(bg, 'round', .036); gs.position.set(Math.sin(a) * .895, .112, -Math.cos(a) * .895); bz.add(gs); }
 
   /* السوار */
   const st = mk('strap', 0); const W = .94, Rz = 1.62, Ry = 1.1, yc = -.78, N = 96, a0 = -Math.asin(1.1 / Rz), a1 = -Math.PI * 2 - a0;

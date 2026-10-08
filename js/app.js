@@ -5,7 +5,8 @@
 import { T, CONFIG } from './content.js';
 import { PRODUCTS, CATS, GEMN, MAT, describe } from './products.js';
 import { createHero, CHAPTERS } from './hero3d.js';
-import { createAtelier, AT, SWATCH } from './atelier.js';
+import { createAtelier } from './atelier.js';
+import { DEF, NO3D, GROUPS, visible, optName, swColor, price, lines, summary } from './designer.js';
 import { createSfx } from './sfx.js';
 
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -21,6 +22,9 @@ const qLang = new URLSearchParams(location.search).get('lang');
 let lang = T[qLang] ? qLang : (T[store.get('msv-lang')] ? store.get('msv-lang') : ((navigator.language || 'en').slice(0, 2).toLowerCase()));
 if (!T[lang]) lang = 'en';
 const t = (k) => (T[lang][k] ?? T.en[k] ?? k);
+const THEMES = ['obsidian', 'emerald', 'burgundy'], qTheme = new URLSearchParams(location.search).get('theme');
+let theme = THEMES.includes(qTheme) ? qTheme : (THEMES.includes(store.get('msv-theme')) ? store.get('msv-theme') : 'obsidian');
+root.dataset.theme = theme;
 const nf = { ar: new Intl.NumberFormat('en-US'), en: new Intl.NumberFormat('en-US'), tr: new Intl.NumberFormat('tr-TR') };
 const money = (n) => `${nf[lang].format(n)} ${CONFIG.currency}`;
 const byId = Object.fromEntries(PRODUCTS.map((p) => [p.id, p]));
@@ -34,7 +38,7 @@ function applyTexts() {
   root.lang = lang; root.dataset.lang = lang; document.title = t('title');
   $$('[data-i]').forEach((el) => { const v = t(el.dataset.i); if (el.matches('.ttl')) split(el, v); else el.textContent = v; });
   $('#snd').setAttribute('aria-label', t(sfx.enabled ? 'sound_off' : 'sound_on')); $('#bagBtn').setAttribute('aria-label', t('bag_open')); $('#langs').setAttribute('aria-label', t('lang'));
-  $('#mClose').setAttribute('aria-label', t('close')); $('#bagClose').setAttribute('aria-label', t('close'));
+  $('#mClose').setAttribute('aria-label', t('close')); $('#bagClose').setAttribute('aria-label', t('close')); $('#thm').setAttribute('aria-label', `${t('theme')}: ${t('thm_' + theme)}`); $('#thm').title = t('thm_' + theme);
 }
 const sfx = createSfx(); sfx.restore(store.get('msv-snd') === '1');
 /* خطوط النقش على الأحجار والميناء تُرسَم داخل كانفاس، فنحمّلها صراحة قبل بناء أي مشهد */
@@ -57,7 +61,10 @@ function mountHero() {
   hero.onAnchors = (an, ex) => {
     const o = clamp((ex - .55) / .3, 0, 1);
     if (!an.length) { if (lastO !== 0) { lastO = 0; Object.values(coEls).forEach((e) => { e.style.opacity = 0; }); } return; }
-    lastO = o; an.forEach((a) => { const el = coEls[a.k]; if (!el) return; el.style.transform = `translate3d(${(a.x * stageW).toFixed(1)}px,${(a.y * stageH).toFixed(1)}px,0)`; el.style.opacity = o.toFixed(2); });
+    lastO = o;
+    const items = an.map((a) => ({ k: a.k, x: a.x * stageW, y: a.y * stageH })).sort((p1, p2) => p1.y - p2.y);
+    for (let i = 1; i < items.length; i++) for (let j = 0; j < i; j++) if (Math.abs(items[i].x - items[j].x) < 210 && Math.abs(items[i].y - items[j].y) < 46) items[i].y = items[j].y + 46;
+    items.forEach((a) => { const el = coEls[a.k]; if (!el) return; el.style.transform = `translate3d(${a.x.toFixed(1)}px,${clamp(a.y, 90, stageH - 60).toFixed(1)}px,0)`; el.style.opacity = o.toFixed(2); });
   };
   hero.setProgress(heroP()); hero.p = hero.target;
 }
@@ -147,9 +154,9 @@ const modal = $('#modal'); let cur = null, lastFocus = null;
 const lock = (on) => { root.style.overflow = on ? 'hidden' : ''; };
 function optHtml(p) {
   let h = '';
-  if (p.cat === 'ring') h += `<label class="opt"><span>${esc(t('o_size'))}</span><select id="oSize">${[50, 52, 54, 56, 58, 60, 62, 64].map((s) => `<option${s === 56 ? ' selected' : ''}>${s}</option>`).join('')}</select></label>`;
-  if (p.spec.cat === 'chain') h += `<label class="opt"><span>${esc(t('o_length'))}</span><select id="oLen">${[40, 45, 50, 55].map((s) => `<option value="${s}"${s === 45 ? ' selected' : ''}>${s} ${esc(t('o_cm'))}</option>`).join('')}</select></label>`;
-  if ((p.cat === 'pendant' && p.spec.text) || p.id === 'ring-signet') h += `<label class="opt"><span>${esc(t('o_engrave'))}</span><input type="text" id="oEng" maxlength="16" placeholder="${esc(t('o_engrave_ph'))}" autocomplete="off"></label>`;
+  if (p.cat === 'ring') h += `<label class="mopt"><span>${esc(t('o_size'))}</span><select id="oSize">${[50, 52, 54, 56, 58, 60, 62, 64].map((s) => `<option${s === 56 ? ' selected' : ''}>${s}</option>`).join('')}</select></label>`;
+  if (p.spec.cat === 'chain') h += `<label class="mopt"><span>${esc(t('o_length'))}</span><select id="oLen">${[40, 45, 50, 55].map((s) => `<option value="${s}"${s === 45 ? ' selected' : ''}>${s} ${esc(t('o_cm'))}</option>`).join('')}</select></label>`;
+  if ((p.cat === 'pendant' && p.spec.text) || p.id === 'ring-signet') h += `<label class="mopt"><span>${esc(t('o_engrave'))}</span><input type="text" id="oEng" maxlength="16" placeholder="${esc(t('o_engrave_ph'))}" autocomplete="off"></label>`;
   return h;
 }
 function modalHtml(p) {
@@ -184,18 +191,20 @@ $('#mInfo').addEventListener('click', (e) => {
 });
 $('#mClose').addEventListener('click', closeModal); $('#mBack').addEventListener('click', closeModal);
 
-/* ------------------------------------------------------------------ الحقيبة */
-let bag = []; try { bag = JSON.parse(store.get('msv-bag', '[]')).filter((i) => byId[i.id] && i.qty > 0); } catch (e) { bag = []; }
+/* ------------------------------------------------------------------ الحقيبة (منتجات الكتالوج + تصاميم الأتيليه) */
+let bag = []; try { bag = JSON.parse(store.get('msv-bag', '[]')).filter((i) => i.qty > 0 && (i.custom ? DEF[i.custom] && i.cfg : byId[i.id])); } catch (e) { bag = []; }
 const drawer = $('#drawer'), scrim = $('#scrim'), bagBtn = $('#bagBtn');
-const keyOf = (i) => [i.id, i.size || '', i.len || '', i.eng || '', i.gift ? 1 : 0].join('|');
+const keyOf = (i) => (i.custom ? `c|${i.custom}|${JSON.stringify(i.cfg)}` : [i.id, i.size || '', i.len || '', i.eng || '', i.gift ? 1 : 0].join('|'));
 function bagAdd(item) { const k = keyOf(item), ex = bag.find((i) => keyOf(i) === k); if (ex) ex.qty = Math.min(20, ex.qty + (item.qty || 1)); else bag.push({ ...item, qty: item.qty || 1 }); saveBag(); renderBag(); sfx.add(); }
 function saveBag() { store.set('msv-bag', JSON.stringify(bag)); }
-const optLine = (i) => [i.size && `${t('wa_size')}: ${i.size}`, i.len && `${t('wa_len')}: ${i.len} ${t('o_cm')}`, i.eng && `${t('wa_eng')}: ${i.eng}`, i.gift && t('wa_gift')].filter(Boolean).join(' · ');
-const total = () => bag.reduce((s, i) => s + byId[i.id].price * i.qty, 0);
+const unit = (i) => (i.custom ? price(i.custom, i.cfg) : byId[i.id].price), itemName = (i) => (i.custom ? t('c_' + i.custom) : byId[i.id].name[lang]);
+const itemImg = (i) => (i.custom ? i.thumb || 'assets/favicon-192.png' : img(i.id, 'a'));
+const optLine = (i) => (i.custom ? summary(i.custom, i.cfg, t) : [i.size && `${t('wa_size')}: ${i.size}`, i.len && `${t('wa_len')}: ${i.len} ${t('o_cm')}`, i.eng && `${t('wa_eng')}: ${i.eng}`, i.gift && t('wa_gift')].filter(Boolean).join(' · '));
+const total = () => bag.reduce((s, i) => s + unit(i) * i.qty, 0);
 function renderBag() {
   const n = bag.reduce((s, i) => s + i.qty, 0), c = $('#bagCount'); c.textContent = n; c.classList.toggle('has', n > 0);
   $('#bagFoot').hidden = !n;
-  $('#bagList').innerHTML = n ? bag.map((i, ix) => { const p = byId[i.id], ol = optLine(i); return `<div class="it"><img src="${img(p.id, 'a')}" alt="" loading="lazy"><div><h4>${esc(p.name[lang])}</h4>${ol ? `<p>${esc(ol)}</p>` : ''}<div class="qty"><button type="button" data-ix="${ix}" data-d="-1" aria-label="-">−</button><span>${i.qty}</span><button type="button" data-ix="${ix}" data-d="1" aria-label="+">+</button></div></div><div class="pr">${money(p.price * i.qty)}<br><button type="button" class="rm" data-ix="${ix}" data-d="0">${esc(t('rm'))}</button></div></div>`; }).join('')
+  $('#bagList').innerHTML = n ? bag.map((i, ix) => { const ol = optLine(i); return `<div class="it"><img src="${itemImg(i)}" alt="" loading="lazy"><div><h4>${esc(itemName(i))}</h4>${ol ? `<p>${esc(ol)}</p>` : ''}<div class="qty"><button type="button" data-ix="${ix}" data-d="-1" aria-label="-">−</button><span>${i.qty}</span><button type="button" data-ix="${ix}" data-d="1" aria-label="+">+</button></div></div><div class="pr">${money(unit(i) * i.qty)}<br><button type="button" class="rm" data-ix="${ix}" data-d="0">${esc(t('rm'))}</button></div></div>`; }).join('')
     : `<div class="empty-bag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6.500a3 3 0 0 1 6 0V8"/></svg><b>${esc(t('bag_empty'))}</b><span>${esc(t('bag_empty_p'))}</span></div>`;
   $('#bagTotal').textContent = money(total());
 }
@@ -208,45 +217,110 @@ function openBag() { drawer.classList.add('on'); scrim.classList.add('on'); draw
 function closeBag() { drawer.classList.remove('on'); scrim.classList.remove('on'); drawer.setAttribute('aria-hidden', 'true'); if (!modal.classList.contains('on')) lock(false); bagBtn.focus({ preventScroll: true }); }
 bagBtn.addEventListener('click', openBag); $('#bagClose').addEventListener('click', closeBag); scrim.addEventListener('click', closeBag);
 $('#bagClear').addEventListener('click', () => { bag = []; saveBag(); renderBag(); });
+const waLink = (msg) => `https://wa.me/${CONFIG.wa}?text=${encodeURIComponent(msg)}`;
+const detailLines = (tab, cfg) => lines(tab, cfg, t).filter(([, v]) => v).map(([k, v]) => `   - ${k}: ${v}`);
 $('#bagSend').addEventListener('click', () => {
   if (!bag.length) return;
-  const lines = bag.map((i, ix) => { const p = byId[i.id], ol = optLine(i); return `${ix + 1}) ${p.name[lang]} ×${i.qty} — ${money(p.price * i.qty)}${ol ? '\n   ' + ol : ''}`; });
-  const msg = `${t('wa_hi')}\n\n${lines.join('\n')}\n\n${t('wa_total')}: ${money(total())}\n\n${t('wa_end')} `;
-  sfx.seal(); window.open(`https://wa.me/${CONFIG.wa}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+  const out = bag.map((i, ix) => `${ix + 1}) ${itemName(i)} ×${i.qty} — ${money(unit(i) * i.qty)}` + (i.custom ? '\n' + detailLines(i.custom, i.cfg).join('\n') : (optLine(i) ? '\n   ' + optLine(i) : '')));
+  const msg = `${t('wa_hi')}\n\n${out.join('\n')}\n\n${t('wa_total')}: ${money(total())}\n\n${t('wa_end')} `;
+  sfx.seal(); window.open(waLink(msg), '_blank', 'noopener');
 });
-function flyFrom(el) {
+function flyFrom(el, src) {
   if (reduced || !el) return; const r = el.getBoundingClientRect(), b = bagBtn.getBoundingClientRect(); if (!r.width) return;
-  const f = document.createElement('img'); f.className = 'fly'; f.src = el.currentSrc || el.src; f.alt = ''; const sx = r.left + r.width / 2, sy = r.top + r.height / 2; f.style.left = `${sx - 27}px`; f.style.top = `${sy - 34}px`; document.body.appendChild(f);
+  const f = document.createElement('img'); f.className = 'fly'; f.src = src || el.currentSrc || el.src; f.alt = ''; const sx = r.left + r.width / 2, sy = r.top + r.height / 2; f.style.left = `${sx - 27}px`; f.style.top = `${sy - 34}px`; document.body.appendChild(f);
   const dx = b.left + b.width / 2 - sx, dy = b.top + b.height / 2 - sy;
   const an = f.animate([{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: `translate(${dx * .4}px,${dy * .4 - 110}px) scale(.85) rotate(-8deg)`, opacity: 1, offset: .45 }, { transform: `translate(${dx}px,${dy}px) scale(.25) rotate(10deg)`, opacity: .15 }], { duration: 820, easing: 'cubic-bezier(.45,.05,.25,1)' });
   an.onfinish = () => { f.remove(); bagBtn.classList.remove('bump'); void bagBtn.offsetWidth; bagBtn.classList.add('bump'); };
 }
+let toastT = 0;
+function toast(msg) { let el = $('#toast'); if (!el) { el = document.createElement('div'); el.id = 'toast'; el.className = 'toast'; el.setAttribute('role', 'status'); document.body.appendChild(el); } el.textContent = msg; el.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('on'), 3600); }
 
-/* ------------------------------------------------------------------ الأتيليه */
-const at = { tab: 'ring', keys: { ring: 'sapphire', watch: 'navy', beads: 'amber' } }; let atelier = null, atCanvas = null;
-const atName = (tab, k) => t((tab === 'ring' ? 'gem_' : tab === 'watch' ? 'd_' : 'b_') + k);
-function renderAt() {
-  $('#atSw').innerHTML = AT[at.tab].map((k) => `<button type="button" class="sw${k === at.keys[at.tab] ? ' on' : ''}" data-k="${k}" style="--c:${SWATCH[k]}"><span class="dot"></span><span>${esc(atName(at.tab, k))}</span></button>`).join('');
-  $('#atPickL').textContent = t('at_pick_' + at.tab); $('#atName').textContent = atName(at.tab, at.keys[at.tab]);
-  $$('#atTabs button').forEach((b) => b.classList.toggle('on', b.dataset.t === at.tab));
+/* ------------------------------------------------------------------ الأتيليه: مصمّم الخاتم والساعة والمسبحة */
+const at = { tab: ['ring', 'watch', 'beads'].includes(store.get('msv-at-tab')) ? store.get('msv-at-tab') : 'ring', cfg: { ring: { ...DEF.ring }, watch: { ...DEF.watch }, beads: { ...DEF.beads } } };
+try { const sv = JSON.parse(store.get('msv-at', 'null')); if (sv) ['ring', 'watch', 'beads'].forEach((k) => { if (!sv[k]) return; GROUPS[k].forEach((g) => { const v = sv[k][g.k]; if (v === undefined) return; if (g.opts && !g.opts.includes(String(v))) return; at.cfg[k][g.k] = String(v).slice(0, 400); }); }); } catch (e) { /* قيم محفوظة تالفة: نتجاهلها */ }
+let atelier = null, atCanvas = null, atTimer = 0; const cfgNow = () => at.cfg[at.tab], atCopy = () => ({ ...cfgNow() });
+const saveAt = () => { store.set('msv-at', JSON.stringify(at.cfg)); store.set('msv-at-tab', at.tab); };
+const accentHex = () => getComputedStyle(root).getPropertyValue('--accent').trim() || '#d9c59d';
+const FACETED = ['amethyst', 'sapphire', 'emerald', 'ruby', 'topaz', 'citrine', 'pink', 'clear'];
+function groupHtml(g, c) {
+  const val = c[g.k], isOpt = g.type === 'chips' || g.type === 'sw', head = `<h4 class="g-l"><span>${esc(t(g.l))}</span>${isOpt ? `<em>${esc(optName(g, val, t))}</em>` : ''}</h4>`;
+  let body = '';
+  if (g.type === 'chips') body = `<div class="opts">${g.opts.map((v) => `<button type="button" class="opt${v === val ? ' on' : ''}" data-g="${g.k}" data-v="${v}">${esc(optName(g, v, t))}</button>`).join('')}</div>`;
+  else if (g.type === 'sw') body = `<div class="swatches">${g.opts.map((v) => `<button type="button" class="sw${v === val ? ' on' : ''}" data-g="${g.k}" data-v="${v}" style="--c:${swColor(g, v)}"><span class="dot"></span><span>${esc(optName(g, v, t))}</span></button>`).join('')}</div>`;
+  else if (g.type === 'select') body = `<select data-g="${g.k}">${g.opts.map((v) => `<option${v === val ? ' selected' : ''}>${v}</option>`).join('')}</select>`;
+  else if (g.type === 'text') body = `<input type="text" data-g="${g.k}" maxlength="${g.max}" value="${esc(val)}" placeholder="${esc(t(g.ph))}" autocomplete="off">${g.h ? `<small>${esc(t(g.h))}</small>` : ''}`;
+  else body = `<textarea data-g="${g.k}" rows="3" maxlength="400" placeholder="${esc(t(g.ph))}">${esc(val)}</textarea>${g.h ? `<small class="hl">${esc(t(g.h))}</small>` : ''}`;
+  return `<section class="grp${g.type === 'area' ? ' note' : ''}" data-grp="${g.k}">${head}${body}</section>`;
 }
-function atPick(tab, k, snd) {
-  at.tab = tab; at.keys[tab] = k; renderAt(); atelier && atelier.set(tab, k);
+function atSummary() {
+  const c = cfgNow(), ls = lines(at.tab, c, t).filter(([, v]) => v);
+  $('#atSumL').textContent = summary(at.tab, c, t); $('#atPrice').textContent = '≈ ' + money(price(at.tab, c)); $('#atName').textContent = ls.slice(0, 2).map(([, v]) => v).join(' · ');
+}
+function renderAt(focusSel) {
+  const c = cfgNow(); $('#atGroups').innerHTML = visible(at.tab, c).map((g) => groupHtml(g, c)).join('');
+  $$('#atTabs button').forEach((b) => b.classList.toggle('on', b.dataset.t === at.tab)); atSummary();
+  if (focusSel) { const f = $(focusSel, $('#atGroups')); f && f.focus({ preventScroll: true }); }
+}
+function push3d() { atelier && atelier.set(at.tab, atCopy()); }
+function atSet(k, v, snd) {
+  const c = cfgNow(); c[k] = v;
+  if (at.tab === 'ring' && k === 'gem' && ['solitaire', 'halo', 'trilogy', 'bezel', 'cluster'].includes(c.style)) { if (!FACETED.includes(v) && (c.cut === 'round' || c.cut === 'oval')) c.cut = 'cabochon'; else if (FACETED.includes(v) && c.cut === 'cabochon') c.cut = 'round'; }
+  saveAt(); renderAt(`[data-g="${k}"][data-v="${v}"]`); push3d();
   const nm = $('#atName'); nm.classList.add('sw'); setTimeout(() => nm.classList.remove('sw'), 40);
-  if (snd) (tab === 'beads' ? sfx.bead() : sfx.glint());
+  if (snd) (at.tab === 'beads' ? sfx.bead() : sfx.glint());
 }
-$('#atSw').addEventListener('click', (e) => { const b = e.target.closest('.sw'); if (b) atPick(at.tab, b.dataset.k, true); });
-$('#atTabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b && b.dataset.t !== at.tab) atPick(b.dataset.t, at.keys[b.dataset.t], true); });
-$('#atSee').addEventListener('click', () => { setCat({ ring: 'ring', watch: 'watch', beads: 'tasbih' }[at.tab]); $('#collection').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' }); });
+$('#atGroups').addEventListener('click', (e) => { const b = e.target.closest('button[data-g]'); if (b) atSet(b.dataset.g, b.dataset.v, true); });
+$('#atGroups').addEventListener('change', (e) => { const el = e.target; if (el.tagName === 'SELECT' && el.dataset.g) { cfgNow()[el.dataset.g] = el.value; saveAt(); atSummary(); } });
+$('#atGroups').addEventListener('input', (e) => {
+  const el = e.target, k = el.dataset.g; if (!k || el.tagName === 'SELECT') return; let v = el.value;
+  if (k === 'brand') { v = v.replace(/[^A-Za-z0-9 .&'-]/g, '').toUpperCase().slice(0, 10); if (v !== el.value) el.value = v; }
+  if (k === 'glyph') { const ar = /[\u0600-\u06FF]/.test(v); v = [...v].slice(0, ar ? 4 : 3).join(''); if (v !== el.value) el.value = v; }
+  cfgNow()[k] = v; saveAt(); atSummary();
+  if (!NO3D.includes(k)) { clearTimeout(atTimer); atTimer = setTimeout(push3d, 450); }
+});
+$('#atTabs').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b && b.dataset.t !== at.tab) { at.tab = b.dataset.t; saveAt(); renderAt(); push3d(); sfx.glint(); } });
+$('#atSee').addEventListener('click', () => { setCat({ ring: 'ring', watch: 'watch', beads: 'tasbih' }[at.tab]); $('#collection').scrollIntoView({ behavior: 'instant' }); });
+const logoImg = new Image(); logoImg.src = 'assets/logo-silver.png';
+/* صورة التصميم: عرض الثري دي فوق خلفية الثيم مع الاسم والملخص والسعر التقديري */
+function composeDesign(px = 1000, withText = true) {
+  if (!atelier) return null; const src = atelier.snapshot(px), H = withText ? Math.round(px * 1.22) : px, c = document.createElement('canvas'); c.width = px; c.height = H;
+  const x = c.getContext('2d'), css = getComputedStyle(root), g = x.createRadialGradient(px / 2, px * .45, 30, px / 2, px * .5, px * .85); g.addColorStop(0, css.getPropertyValue('--stage1').trim() || '#25221e'); g.addColorStop(1, css.getPropertyValue('--stage2').trim() || '#0f0e0d'); x.fillStyle = g; x.fillRect(0, 0, px, H);
+  x.drawImage(src, 0, 0, px, px);
+  if (withText) {
+    const fg = `rgb(${css.getPropertyValue('--fgc').trim() || '244,240,232'})`, ac = accentHex(); x.textAlign = 'center'; x.direction = lang === 'ar' ? 'rtl' : 'ltr';
+    if (logoImg.complete && logoImg.naturalWidth) x.drawImage(logoImg, px * .04, px * .035, px * .13, px * .13 * logoImg.naturalHeight / logoImg.naturalWidth);
+    x.fillStyle = fg; x.font = `600 ${px * .05}px "Cormorant Garamond","Markazi Text",serif`; x.fillText(t('c_' + at.tab), px / 2, px + px * .07);
+    x.fillStyle = css.getPropertyValue('--mut').trim() || '#aaa'; x.font = `500 ${px * .03}px "Manrope","Tajawal",sans-serif`;
+    const words = summary(at.tab, cfgNow(), t).split(' · '); let line = '', y = px + px * .125; words.forEach((w) => { const tr = line ? line + ' · ' + w : w; if (x.measureText(tr).width > px * .9 && line) { x.fillText(line, px / 2, y); y += px * .045; line = w; } else line = tr; }); x.fillText(line, px / 2, y);
+    x.direction = 'ltr'; x.fillStyle = ac; x.font = `600 ${px * .045}px "Cormorant Garamond","Markazi Text",serif`; x.fillText('≈ ' + money(price(at.tab, cfgNow())), px / 2, H - px * .04);
+  }
+  return c;
+}
+const toBlob = (cv) => new Promise((res) => cv.toBlob(res, 'image/png'));
+async function saveDesign() {
+  const cv = composeDesign(1000, true); if (!cv) return false; const blob = await toBlob(cv); if (!blob) return false;
+  const file = new File([blob], `mohammed-${at.tab}-design.png`, { type: 'image/png' });
+  if (matchMedia('(pointer: coarse)').matches && navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: 'MOHAMMED' }); return true; } catch (e) { if (e && e.name === 'AbortError') return false; } }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); return true;
+}
+$('#atSave').addEventListener('click', async () => { if (await saveDesign()) { toast(t('at_saved')); sfx.add(); } });
+$('#atWa').addEventListener('click', () => {
+  const c = cfgNow(), msg = `${t('wa_design')}\n\n*${t('c_' + at.tab)}*\n${detailLines(at.tab, c).join('\n')}\n\n${t('wa_est')}: ≈ ${money(price(at.tab, c))}\n\n${t('wa_pic')}`;
+  sfx.seal(); window.open(waLink(msg), '_blank', 'noopener'); toast(t('at_step2'));
+});
+$('#atBag').addEventListener('click', () => {
+  const cv = composeDesign(240, false); let thumb = ''; if (cv) { const t2 = document.createElement('canvas'); t2.width = 120; t2.height = 150; const x = t2.getContext('2d'); x.fillStyle = '#111'; x.fillRect(0, 0, 120, 150); x.drawImage(cv, 0, 12, 120, 120); thumb = t2.toDataURL('image/jpeg', .72); }
+  bagAdd({ custom: at.tab, cfg: atCopy(), qty: 1, thumb }); flyFrom($('#atView'), thumb || undefined); toast(t('at_added'));
+});
 function mountAt() {
   if (atelier) return; const c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); $('#atView').prepend(c);
-  const a = createAtelier(c, { tab: at.tab, key: at.keys[at.tab] }); if (!a) { c.remove(); return; }
+  const a = createAtelier(c, { tab: at.tab, cfg: atCopy(), accent: accentHex() }); if (!a) { c.remove(); return; }
   atCanvas = c; atelier = a; a.onTick = () => { if (at.tab === 'watch') sfx.tick(); };
   a.onDrag = (d) => { cursorEl.classList.toggle('drag', d); if (d) $('.at-hint').classList.add('gone'); };
 }
 function unmountAt() { if (!atelier) return; atelier.dispose(); atelier = null; atCanvas && atCanvas.remove(); atCanvas = null; }
 let atWanted = false;
-new IntersectionObserver((es) => { atWanted = es[0].isIntersecting; if (atWanted) fontsP.then(() => { if (atWanted) mountAt(); }); else unmountAt(); }, { rootMargin: '100% 0px' }).observe($('#atelier'));
+new IntersectionObserver((es) => { atWanted = es[0].isIntersecting; if (atWanted) fontsP.then(() => { if (atWanted) (window.requestIdleCallback || ((f) => setTimeout(f, 60)))(() => { if (atWanted) mountAt(); }); }); else unmountAt(); }, { rootMargin: '40% 0px' }).observe($('#atelier'));
 
 /* ------------------------------------------------------------------ مبدّل اللغة (دائرة تتسع من مكان الضغط) */
 const langsEl = $('#langs');
@@ -284,6 +358,28 @@ function bindMag(els) {
 }
 bindMag($$('.mag'));
 addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (modal.classList.contains('on')) closeModal(); else if (drawer.classList.contains('on')) closeBag(); } });
+
+/* ------------------------------------------------------------------ اللون (ثلاث لوحات) وتنقّل فوري وصور الكتالوج */
+function applyTheme() {
+  root.dataset.theme = theme; const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = getComputedStyle(root).getPropertyValue('--bg').trim();
+  atelier && atelier.setAccent(accentHex()); $('#thm').setAttribute('aria-label', `${t('theme')}: ${t('thm_' + theme)}`); $('#thm').title = t('thm_' + theme);
+}
+$('#thm').addEventListener('click', () => {
+  const next = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length], btn = $('#thm'), r = btn.getBoundingClientRect();
+  root.style.setProperty('--vx', `${Math.round(r.left + r.width / 2)}px`); root.style.setProperty('--vy', `${Math.round(r.top + r.height / 2)}px`);
+  const apply = () => { theme = next; store.set('msv-theme', theme); const u = new URL(location.href); u.searchParams.set('theme', theme); history.replaceState(null, '', u); applyTheme(); };
+  if (document.startViewTransition && !reduced) { const vt = document.startViewTransition(apply); vt.finished.catch(() => {}); } else apply(); sfx.glint();
+});
+/* روابط الأقسام تقفز فوراً (لا تمرير ناعم عبر الهيرو الثقيل) */
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('a[href^="#"]'); if (!a) return; const id = a.getAttribute('href'); if (id.length < 2) return;
+  const el = id === '#top' ? document.body : $(id); if (!el) return; e.preventDefault();
+  if (id === '#top') window.scrollTo({ top: 0, behavior: 'instant' }); else el.scrollIntoView({ behavior: 'instant', block: 'start' });
+  history.replaceState(null, '', location.pathname + location.search + id);
+});
+/* صور البطاقات: تظهر بتلاشٍ عند اكتمال التحميل فوق هيكل لامع، وأول ثماني صور تُجهَّز مسبقاً بعد فراغ الصفحة */
+grid.addEventListener('load', (e) => { if (e.target.tagName === 'IMG') e.target.classList.add('in'); }, true);
+setTimeout(() => { ordered().slice(0, 8).forEach((p) => { const i = new Image(); i.decoding = 'async'; i.src = img(p.id, 'a'); }); }, 2200);
 
 /* ------------------------------------------------------------------ تشغيل */
 renderAll(); syncLangs(false); syncSnd(); onScroll();
